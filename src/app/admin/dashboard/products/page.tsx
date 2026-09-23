@@ -1,5 +1,5 @@
 'use client';
-
+export const runtime = 'edge';
 import { useEffect, useState } from 'react';
 import { Product } from '@/lib/types';
 import ProductFormModal from '@/components/admin/ProductFormModal';
