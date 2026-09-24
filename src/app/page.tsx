@@ -159,7 +159,7 @@ export default async function HomePage() {
             >
               <p>No products yet.</p>
               <p style={{ fontSize: 14, marginTop: 6 }}>
-                Add your first product from the admin panel.
+                Add your first product.
               </p>
             </div>
           ) : (
@@ -179,13 +179,31 @@ export default async function HomePage() {
         <div className="container" style={{ paddingTop: 64, paddingBottom: 64 }}>
           <div style={{ maxWidth: 640 }}>
             <p style={{ fontSize: 14, opacity: 0.7, marginBottom: 16 }}>Our story</p>
+
             <h2 style={{ fontSize: 30, marginBottom: 16 }}>
-              We believe skincare should be simple, honest, and for everyone.
+              Built on experience, trust, and a love for beauty.
             </h2>
-            <p style={{ fontSize: 16, opacity: 0.85 }}>
-              Our mission is to create gentle, effective care for all skin types and tones, 
-              without the noise.
+
+            <p style={{ fontSize: 16, opacity: 0.85, lineHeight: 1.7, marginBottom: 24 }}>
+              With over <strong>13 years in the beauty industry</strong>, Saba has built
+              lasting relationships with salons and beauty professionals by making
+              quality, branded products easier to access.
             </p>
+
+            <a
+              href="/about"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                fontSize: 15,
+                fontWeight: 600,
+                textDecoration: 'none',
+                color: 'inherit',
+              }}
+            >
+              Read our story <span aria-hidden="true">→</span>
+            </a>
           </div>
         </div>
       </section>

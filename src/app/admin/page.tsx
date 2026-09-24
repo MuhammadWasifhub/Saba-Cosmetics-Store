@@ -53,7 +53,7 @@ export default function AdminLoginPage() {
       >
         <h1 style={{ fontSize: 22, marginBottom: 6 }}>Saba Cosmetics</h1>
         <p style={{ fontSize: 14, color: 'var(--color-muted)', marginBottom: 28 }}>
-          Admin panel — please sign in.
+          Admin panel. Please sign in.
         </p>
 
         <label style={{ fontSize: 13, display: 'block', marginBottom: 6 }}>Password</label>
