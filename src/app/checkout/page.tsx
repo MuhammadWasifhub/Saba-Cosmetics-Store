@@ -15,10 +15,14 @@ const PAKISTAN_CITIES = [
   'Bahawalpur', 'Sargodha', 'Abbottabad', 'Other',
 ];
 
+const EASYPAISA_NUMBER = '03110261448';
+const EASYPAISA_NAME = 'Sabah Rasheed';
+
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
   const router = useRouter();
 
+  const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     customer_name: '',
     customer_phone: '',
@@ -28,6 +32,8 @@ export default function CheckoutPage() {
     city: '',
     landmark: '',
   });
+  const [screenshotUrl, setScreenshotUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -40,17 +46,47 @@ export default function CheckoutPage() {
     return /^(03\d{9}|\+923\d{9})$/.test(cleaned);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
+  function validateAddressStep() {
+    if (!form.customer_name.trim()) return 'Please enter your full name.';
+    if (!validatePhone(form.customer_phone)) return 'Please enter a valid phone number (e.g. 03xx-xxxxxxx).';
+    if (!form.shipping_address.trim()) return 'Please enter your street address / house details.';
+    if (!form.area.trim()) return 'Please enter your area or neighbourhood.';
+    if (!form.city.trim()) return 'Please select your city.';
+    return '';
+  }
 
-    if (!form.customer_name.trim()) return setError('Please enter your full name.');
-    if (!validatePhone(form.customer_phone)) {
-      return setError('Please enter a valid phone number (e.g. 03xx-xxxxxxx).');
+  function goToPayment(e: React.FormEvent) {
+    e.preventDefault();
+    const err = validateAddressStep();
+    if (err) return setError(err);
+    setError('');
+    setStep(2);
+  }
+
+  async function handleScreenshotUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload-payment', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Screenshot upload failed. Please try again.');
+      } else {
+        setScreenshotUrl(data.url);
+      }
+    } catch {
+      setError('Screenshot upload failed. Please try again.');
     }
-    if (!form.shipping_address.trim()) return setError('Please enter your street address / house details.');
-    if (!form.area.trim()) return setError('Please enter your area or neighbourhood.');
-    if (!form.city.trim()) return setError('Please select your city.');
+    setUploading(false);
+  }
+
+  async function handleFinalSubmit() {
+    setError('');
+    if (!screenshotUrl) return setError('Please upload your payment screenshot to continue.');
     if (items.length === 0) return setError('Your bag is empty.');
 
     setSubmitting(true);
@@ -60,6 +96,7 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          payment_screenshot_url: screenshotUrl,
           items: items.map((i) => ({
             product_id: i.product_id,
             name: i.name,
@@ -78,8 +115,8 @@ export default function CheckoutPage() {
       }
 
       clearCart();
-      router.push(`/order-confirmed?order=${data.order_number}`);
-    } catch (err) {
+      router.push(`/order-confirmed?order=${data.order_number}&cid=${data.customer_id}`);
+    } catch {
       setError('Network error. Please check your connection and try again.');
       setSubmitting(false);
     }
@@ -109,17 +146,61 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="container" style={{ paddingTop: 48, paddingBottom: 80 }}>
-      <h1 style={{ fontSize: 30, marginBottom: 6 }}>Checkout</h1>
-      <p style={{ color: 'var(--color-muted)', fontSize: 14, marginBottom: 32 }}>
-        Cash on Delivery, pay when your order arrives at your door.
-      </p>
+    <main className="container" style={{ paddingTop: 48, paddingBottom: 80, maxWidth: 720 }}>
+      <h1 style={{ fontSize: 30, marginBottom: 24 }}>Checkout</h1>
 
-      <div
-        style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 56 }}
-        className="checkout-grid"
-      >
-        <form onSubmit={handleSubmit}>
+      {/* Stepper */}
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 40 }}>
+        {[
+          { n: 1, label: 'Delivery details' },
+          { n: 2, label: 'Payment' },
+        ].map((s, idx) => (
+          <div key={s.n} style={{ display: 'flex', alignItems: 'center', flex: idx === 0 ? 1 : 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  background: step >= s.n ? 'var(--color-ink)' : 'var(--color-hairline)',
+                  color: step >= s.n ? 'var(--color-white)' : 'var(--color-muted)',
+                  flexShrink: 0,
+                }}
+              >
+                {step > s.n ? '✓' : s.n}
+              </div>
+              <span
+                style={{
+                  fontSize: 13.5,
+                  color: step >= s.n ? 'var(--color-ink)' : 'var(--color-muted)',
+                  fontWeight: step === s.n ? 600 : 400,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {s.label}
+              </span>
+            </div>
+            {idx === 0 && (
+              <div
+                style={{
+                  flex: 1,
+                  height: 2,
+                  background: step > 1 ? 'var(--color-ink)' : 'var(--color-hairline)',
+                  margin: '0 16px',
+                }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {step === 1 && (
+        <form onSubmit={goToPayment}>
           <h2 style={sectionHeading}>Contact details</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
             <div>
@@ -151,9 +232,6 @@ export default function CheckoutPage() {
                 />
               </div>
             </div>
-            <p style={{ fontSize: 12.5, color: 'var(--color-muted)' }}>
-              We'll use this number to confirm your order and for the rider to reach you on delivery.
-            </p>
           </div>
 
           <h2 style={sectionHeading}>Delivery address</h2>
@@ -187,9 +265,7 @@ export default function CheckoutPage() {
                 >
                   <option value="">Select city</option>
                   {PAKISTAN_CITIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
+                    <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
               </div>
@@ -205,78 +281,156 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          <div
-            style={{
-              marginTop: 28,
-              padding: '14px 16px',
-              background: 'var(--color-cream)',
-              borderRadius: 10,
-              fontSize: 13.5,
-              color: 'var(--color-muted)',
-            }}
-          >
-            💵 Payment method: <strong style={{ color: 'var(--color-ink)' }}>Cash on Delivery</strong>. 
-            Please keep exact change ready for the rider where possible.
-          </div>
-
           {error && <p style={{ color: '#b3413a', fontSize: 14, marginTop: 16 }}>{error}</p>}
 
           <button
             type="submit"
-            disabled={submitting}
             style={{
               width: '100%',
-              marginTop: 24,
+              marginTop: 28,
               background: 'var(--color-ink)',
               color: 'var(--color-white)',
               border: 'none',
               borderRadius: 999,
               padding: '16px',
               fontSize: 15,
-              opacity: submitting ? 0.7 : 1,
             }}
           >
-            {submitting ? 'Placing order…' : `Place order ${formatPKR(totalPrice)}`}
+            Continue to payment
           </button>
         </form>
+      )}
 
+      {step === 2 && (
         <div>
-          <div style={{ background: 'var(--color-cream)', borderRadius: 14, padding: 24 }}>
-            <h2 style={{ fontSize: 16, marginBottom: 18 }}>Order summary</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
-              {items.map((item) => (
-                <div
-                  key={item.product_id}
-                  style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}
-                >
-                  <span>
-                    {item.name} × {item.quantity}
-                  </span>
-                  <span>{formatPKR(item.price * item.quantity)}</span>
-                </div>
-              ))}
+          <div
+            style={{
+              background: 'var(--color-cream)',
+              borderRadius: 14,
+              padding: 24,
+              marginBottom: 24,
+            }}
+          >
+            <h2 style={{ fontSize: 17, marginBottom: 16 }}>Pay via Easypaisa</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14.5, marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--color-muted)' }}>Easypaisa number</span>
+                <strong>{EASYPAISA_NUMBER}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--color-muted)' }}>Account title</span>
+                <strong>{EASYPAISA_NAME}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--color-muted)' }}>Amount to pay</span>
+                <strong>{formatPKR(totalPrice)}</strong>
+              </div>
             </div>
-            <div
+            <p style={{ fontSize: 13, color: 'var(--color-muted)', lineHeight: 1.6 }}>
+              Please send the above amount to this Easypaisa number, then upload a screenshot of your
+              payment below. Your order will be confirmed once we verify the payment.
+            </p>
+            <p style={{ fontSize: 13, color: '#b3413a', lineHeight: 1.6, marginTop: 10, fontWeight: 500 }}>
+              ⚠️ Please re-check the correct name and number before making the payment.
+            </p>
+          </div>
+
+          <label style={labelStyle}>Upload payment screenshot *</label>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '1px dashed var(--color-hairline)',
+              borderRadius: 12,
+              padding: screenshotUrl ? 0 : '32px 16px',
+              cursor: 'pointer',
+              marginBottom: 20,
+              overflow: 'hidden',
+            }}
+          >
+            {screenshotUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={screenshotUrl} alt="Payment screenshot" style={{ width: '100%', maxHeight: 320, objectFit: 'contain' }} />
+            ) : (
+              <span style={{ fontSize: 13.5, color: 'var(--color-muted)' }}>
+                {uploading ? 'Uploading…' : 'Tap to upload screenshot'}
+              </span>
+            )}
+            <input type="file" accept="image/*" onChange={handleScreenshotUpload} style={{ display: 'none' }} />
+          </label>
+
+          {error && <p style={{ color: '#b3413a', fontSize: 14, marginBottom: 16 }}>{error}</p>}
+
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => setStep(1)}
               style={{
-                borderTop: '1px solid var(--color-hairline)',
-                paddingTop: 16,
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontSize: 16,
-                fontWeight: 600,
+                flex: 1,
+                border: '1px solid var(--color-hairline)',
+                background: 'var(--color-white)',
+                borderRadius: 999,
+                padding: '15px',
+                fontSize: 14.5,
               }}
             >
-              <span>Total</span>
-              <span>{formatPKR(totalPrice)}</span>
-            </div>
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={handleFinalSubmit}
+              disabled={submitting || uploading || !screenshotUrl}
+              style={{
+                flex: 2,
+                background: 'var(--color-ink)',
+                color: 'var(--color-white)',
+                border: 'none',
+                borderRadius: 999,
+                padding: '15px',
+                fontSize: 14.5,
+                opacity: submitting || uploading || !screenshotUrl ? 0.6 : 1,
+              }}
+            >
+              {submitting ? 'Confirming order…' : `Confirm order ${formatPKR(totalPrice)}`}
+            </button>
           </div>
+        </div>
+      )}
+
+      <div
+        style={{
+          marginTop: 32,
+          background: 'var(--color-cream)',
+          borderRadius: 14,
+          padding: 24,
+        }}
+      >
+        <h2 style={{ fontSize: 16, marginBottom: 18 }}>Order summary</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
+          {items.map((item) => (
+            <div key={item.product_id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+              <span>{item.name} × {item.quantity}</span>
+              <span>{formatPKR(item.price * item.quantity)}</span>
+            </div>
+          ))}
+        </div>
+        <div
+          style={{
+            borderTop: '1px solid var(--color-hairline)',
+            paddingTop: 16,
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontSize: 16,
+            fontWeight: 600,
+          }}
+        >
+          <span>Total</span>
+          <span>{formatPKR(totalPrice)}</span>
         </div>
       </div>
 
       <style>{`
-        @media (max-width: 800px) {
-          .checkout-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
-        }
         @media (max-width: 480px) {
           .phone-grid { grid-template-columns: 1fr !important; }
         }

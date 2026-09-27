@@ -45,6 +45,8 @@ export default function Header() {
           <Link href="/" style={{ color: pathname === '/' ? 'var(--color-ink)' : 'var(--color-muted)', fontWeight: pathname === '/' ? 600 : 400 }}>Home</Link>
           <Link href="/all-products" style={{ color: pathname === '/all-products' ? 'var(--color-ink)' : 'var(--color-muted)', fontWeight: pathname === '/all-products' ? 600 : 400 }}>All Products</Link>
           <Link href="/about" style={{ color: pathname === '/about' ? 'var(--color-ink)' : 'var(--color-muted)', fontWeight: pathname === '/about' ? 600 : 400 }}>Our Story</Link>
+          <Link href="/returns" style={{ color: pathname === '/returns' ? 'var(--color-ink)' : 'var(--color-muted)', fontWeight: pathname === '/returns' ? 600 : 400 }}>Report</Link>
+          <Link href="/policies" style={{ color: pathname === '/policies' ? 'var(--color-ink)' : 'var(--color-muted)', fontWeight: pathname === '/policies' ? 600 : 400 }}>Policy</Link>
         </nav>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -126,11 +128,13 @@ export default function Header() {
           <Link href="/" onClick={() => setMobileOpen(false)} style={{ color: pathname === '/' ? 'var(--color-ink)' : 'var(--color-muted)', fontWeight: pathname === '/' ? 600 : 400 }}>Home</Link>
           <Link href="/all-products" onClick={() => setMobileOpen(false)} style={{ color: pathname === '/all-products' ? 'var(--color-ink)' : 'var(--color-muted)', fontWeight: pathname === '/all-products' ? 600 : 400 }}>All Products</Link>
           <Link href="/about" onClick={() => setMobileOpen(false)} style={{ color: pathname === '/about' ? 'var(--color-ink)' : 'var(--color-muted)', fontWeight: pathname === '/about' ? 600 : 400 }}>Our Story</Link>
+          <Link href="/returns" onClick={() => setMobileOpen(false)} style={{ color: pathname === '/returns' ? 'var(--color-ink)' : 'var(--color-muted)', fontWeight: pathname === '/returns' ? 600 : 400 }}>Report</Link>
+          <Link href="/policies" onClick={() => setMobileOpen(false)} style={{ color: pathname === '/policies' ? 'var(--color-ink)' : 'var(--color-muted)', fontWeight: pathname === '/policies' ? 600 : 400 }}>Policy</Link>
         </div>
       )}
 
       <style>{`
-        .header-nav-center { margin-left: auto; margin-right: 40px; }
+        .header-nav-center { margin-left: auto; margin-right: 310px; }
         .mobile-nav-panel { display: none; }
         .bag-label { display: inline; }
         @media (max-width: 760px) {

@@ -21,6 +21,7 @@ export default function AdminSidebar() {
     { href: '/admin/dashboard/banners', label: 'Banner' },
     { href: '/admin/dashboard/featured', label: 'Best Sellers' },
     { href: '/admin/dashboard/orders', label: 'Orders' },
+    { href: '/admin/dashboard/returns', label: 'Returns & Complaints' },
   ];
 
   return (

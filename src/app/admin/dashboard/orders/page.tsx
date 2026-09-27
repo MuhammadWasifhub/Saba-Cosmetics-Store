@@ -10,6 +10,7 @@ function formatPKR(amount: number) {
 }
 
 const STATUS_OPTIONS = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+const PAYMENT_STATUS_OPTIONS = ['pending_verification', 'confirmed', 'rejected'];
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   pending: { bg: '#f5efe0', text: '#8a6d1f' },
@@ -44,6 +45,17 @@ export default function AdminOrdersPage() {
     });
     if (res.ok) {
       setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, order_status: order_status as any } : o)));
+    }
+  }
+
+  async function updatePaymentStatus(orderId: string, payment_status: string) {
+    const res = await fetch(`/api/admin/orders/${orderId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payment_status }),
+    });
+    if (res.ok) {
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, payment_status: payment_status as any } : o)));
     }
   }
 
@@ -118,7 +130,12 @@ export default function AdminOrdersPage() {
                           {order.customer_phone}
                           {order.customer_phone_alt ? ` / ${order.customer_phone_alt}` : ''}
                         </p>
-                        <p style={{ fontSize: 14, color: 'var(--color-muted)' }}>{order.shipping_address}</p>
+                        <p style={{ fontSize: 14, color: 'var(--color-muted)', marginBottom: 8 }}>{order.shipping_address}</p>
+                        {(order as any).customer_id && (
+                          <p style={{ fontSize: 13 }}>
+                            Customer ID: <strong>{(order as any).customer_id}</strong>
+                          </p>
+                        )}
                       </div>
 
                       <div>
@@ -134,7 +151,51 @@ export default function AdminOrdersPage() {
                       </div>
                     </div>
 
-                    <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+                    {(order as any).payment_screenshot_url && (
+                      <div style={{ marginTop: 20 }}>
+                        <h4 style={{ fontSize: 12.5, color: 'var(--color-muted)', marginBottom: 8, textTransform: 'uppercase' }}>
+                          Payment screenshot ({(order as any).payment_method || 'easypaisa'})
+                        </h4>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={(order as any).payment_screenshot_url}
+                          alt="Payment screenshot"
+                          style={{ maxWidth: 260, borderRadius: 10, border: '1px solid var(--color-hairline)' }}
+                        />
+                        <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+                          <span
+                            style={{
+                              fontSize: 11.5,
+                              padding: '3px 10px',
+                              borderRadius: 999,
+                              background: (order as any).payment_status === 'confirmed' ? '#dff0e0' : '#f5efe0',
+                              color: (order as any).payment_status === 'confirmed' ? '#2d6a34' : '#8a6d1f',
+                              textTransform: 'capitalize',
+                            }}
+                          >
+                            Payment: {((order as any).payment_status || 'pending_verification').replace('_', ' ')}
+                          </span>
+                          <select
+                            value={(order as any).payment_status || 'pending_verification'}
+                            onChange={(e) => updatePaymentStatus(order.id, e.target.value)}
+                            style={{
+                              border: '1px solid var(--color-hairline)',
+                              borderRadius: 8,
+                              padding: '4px 8px',
+                              fontSize: 12,
+                            }}
+                          >
+                            {PAYMENT_STATUS_OPTIONS.map((s) => (
+                              <option key={s} value={s}>
+                                {s.replace('_', ' ')}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                       <label style={{ fontSize: 13, color: 'var(--color-muted)' }}>Update status:</label>
                       <select
                         value={order.order_status}

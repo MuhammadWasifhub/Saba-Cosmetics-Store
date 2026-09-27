@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase-admin';
 import { generateOrderNumber } from '@/lib/order-number';
+import { generateCustomerId } from '@/lib/customer-id';
+
 
 export const runtime = 'edge';
 
@@ -16,6 +18,7 @@ export async function POST(req: NextRequest) {
       city,
       landmark,
       items,
+      payment_screenshot_url,
     } = body;
 
     if (!customer_name || !customer_phone || !shipping_address || !city || !area) {
@@ -27,6 +30,18 @@ export async function POST(req: NextRequest) {
 
     const supabase = createAdminClient();
     const orderNumber = generateOrderNumber();
+
+    // Reuse existing customer_id for same phone number, else generate new
+    let customerId: string;
+    const { data: existingOrder } = await supabase
+      .from('orders')
+      .select('customer_id')
+      .eq('customer_phone', customer_phone)
+      .not('customer_id', 'is', null)
+      .limit(1)
+      .maybeSingle();
+
+    customerId = existingOrder?.customer_id || generateCustomerId();
 
     // Verify stock and prices server-side against the database (never trust client-sent prices)
     const productIds = items.map((i: any) => i.product_id);
@@ -76,14 +91,16 @@ export async function POST(req: NextRequest) {
         order_number: orderNumber,
         customer_name,
         customer_phone,
-        customer_email: customer_phone_alt || null,
+        customer_phone_alt: customer_phone_alt || null,
         shipping_address: fullAddress,
         city,
         items: verifiedItems,
         subtotal: verifiedSubtotal,
         total: verifiedSubtotal,
-        payment_method: 'cod',
-        payment_status: 'pending',
+        payment_method: 'easypaisa',
+        payment_status: 'pending_verification',
+        payment_screenshot_url: payment_screenshot_url || null,
+        customer_id: customerId,
         order_status: 'pending',
       })
       .select()
@@ -103,7 +120,7 @@ export async function POST(req: NextRequest) {
         .eq('id', item.product_id);
     }
 
-    return NextResponse.json({ order_number: order.order_number, order_id: order.id });
+    return NextResponse.json({ order_number: order.order_number, order_id: order.id, customer_id: order.customer_id });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 });
