@@ -311,7 +311,11 @@ export default function CheckoutPage() {
               marginBottom: 24,
             }}
           >
-            <h2 style={{ fontSize: 17, marginBottom: 16 }}>Pay via Easypaisa</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/easypaisa.png" alt="Easypaisa" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }} />
+              <h2 style={{ fontSize: 17 }}>Pay via Easypaisa</h2>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14.5, marginBottom: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--color-muted)' }}>Easypaisa number</span>
