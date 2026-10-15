@@ -4,16 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/lib/cart-context';
+import { getCategories, FALLBACK_CATEGORIES, Category } from '@/lib/categories';
 
-const CATEGORIES = [
-  { label: 'New In', slug: 'New In' },
-  { label: 'Makeup', slug: 'Makeup' },
-  { label: 'Skincare', slug: 'Skincare' },
-  { label: 'Nail Paints', slug: 'Nail Paints' },
-  { label: 'Hand Bags', slug: 'Hand Bags' },
-  { label: 'Fragrance', slug: 'Fragrance' },
-  { label: 'Sale', slug: 'Sale' },
-];
+// categories loaded from DB
 
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
@@ -26,9 +19,16 @@ const NAV_LINKS = [
 export default function Header() {
   const { totalItems, openCart } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
   const [scrolled, setScrolled] = useState(false);
   const [cartPulse, setCartPulse] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    getCategories().then((rows) => {
+      if (rows.length > 0) setCategories(rows);
+    });
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -142,16 +142,16 @@ export default function Header() {
       {/* Category strip */}
       <div className="category-strip">
         <div className="container category-strip-inner hide-scrollbar">
-          {CATEGORIES.map((c) => {
+          {categories.map((c) => {
             const href =
               c.slug === 'New In'
                 ? '/all-products?sort=new'
-                : c.slug === 'Sale'
+                : c.slug.toLowerCase() === 'sale'
                 ? '/all-products?sale=1'
                 : `/all-products?category=${encodeURIComponent(c.slug)}`;
             return (
-              <Link key={c.slug} href={href} className="category-link">
-                {c.label}
+              <Link key={c.id} href={href} className="category-link">
+                {c.name}
               </Link>
             );
           })}
@@ -177,16 +177,16 @@ export default function Header() {
 
           <p className="mobile-section-label">Shop by category</p>
           <div className="mobile-cats">
-            {CATEGORIES.map((c) => {
+            {categories.map((c) => {
               const href =
                 c.slug === 'New In'
                   ? '/all-products?sort=new'
-                  : c.slug === 'Sale'
+                  : c.slug.toLowerCase() === 'sale'
                   ? '/all-products?sale=1'
                   : `/all-products?category=${encodeURIComponent(c.slug)}`;
               return (
-                <Link key={c.slug} href={href} className="pill">
-                  {c.label}
+                <Link key={c.id} href={href} className="pill">
+                  {c.name}
                 </Link>
               );
             })}

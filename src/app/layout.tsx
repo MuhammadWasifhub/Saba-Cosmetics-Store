@@ -8,7 +8,7 @@ import FloatingWhatsApp from '@/components/FloatingWhatsApp';
 import AnnouncementBar from '@/components/AnnouncementBar';
 
 export const metadata: Metadata = {
-  title: 'Saba Cosmetics — Skincare & Beauty, Made Honest',
+  title: 'Saba Cosmetics Store',
   description:
     'Saba Cosmetics brings gentle, effective skincare and beauty essentials to every skin type across Pakistan. Shop serums, cleansers, and makeup crafted to be simple and honest.',
   openGraph: {

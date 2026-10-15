@@ -1,7 +1,10 @@
+// (no 'use client' — this is a server component)
 import Link from 'next/link';
+import { getCategories } from '@/lib/categories';
 
-export default function Footer() {
+export default async function Footer() {
   const year = new Date().getFullYear();
+  const categories = await getCategories();
 
   return (
     <footer
@@ -30,14 +33,20 @@ export default function Footer() {
             </p>
           </div>
 
-          <div>
+        <div>
             <p style={colTitle}>Shop</p>
             <ul style={listStyle}>
               <li><Link href="/all-products" style={linkStyle}>All Products</Link></li>
-              <li><Link href="/all-products?category=Makeup" style={linkStyle}>Makeup</Link></li>
-              <li><Link href="/all-products?category=Skincare" style={linkStyle}>Skincare</Link></li>
-              <li><Link href="/all-products?category=Nail%20Paints" style={linkStyle}>Nail Paints</Link></li>
-              <li><Link href="/all-products?category=Hand%20Bags" style={linkStyle}>Hand Bags</Link></li>
+              {categories.slice(0, 5).map((c) => (
+                <li key={c.id}>
+                  <Link
+                    href={`/all-products?category=${encodeURIComponent(c.slug)}`}
+                    style={linkStyle}
+                  >
+                    {c.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

@@ -4,21 +4,26 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/lib/types';
+import { Category, FALLBACK_CATEGORIES } from '@/lib/categories';
 
-const CATEGORIES = [
-  { label: 'All', slug: 'All' },
-  { label: 'New In', slug: 'New In' },
-  { label: 'Makeup', slug: 'Makeup' },
-  { label: 'Skincare', slug: 'Skincare' },
-  { label: 'Nail Paints', slug: 'Nail Paints' },
-  { label: 'Hand Bags', slug: 'Hand Bags' },
-  { label: 'Fragrance', slug: 'Fragrance' },
-  { label: 'Sale', slug: 'Sale' },
-];
+// categories loaded from DB
 
 type SortKey = 'featured' | 'new' | 'price-asc' | 'price-desc';
 
-export default function AllProductsClient({ products }: { products: Product[] }) {
+export default function AllProductsClient({
+  products,
+  categories = [],
+}: {
+  products: Product[];
+  categories?: Category[];
+}) {
+  const categoryList: { label: string; slug: string }[] = [
+    { label: 'All', slug: 'All' },
+    ...(categories.length > 0
+      ? categories.map((c) => ({ label: c.name, slug: c.slug }))
+      : FALLBACK_CATEGORIES.map((c) => ({ label: c.name, slug: c.slug }))),
+    { label: 'Sale', slug: 'Sale' },
+  ];
   const searchParams = useSearchParams();
 
   const [query, setQuery] = useState('');
@@ -190,7 +195,7 @@ export default function AllProductsClient({ products }: { products: Product[] })
 
       {/* Category pills */}
       <div className="ap-pills hide-scrollbar" role="tablist" aria-label="Categories">
-        {CATEGORIES.map((c) => (
+        {categoryList.map((c) => (
           <button
             key={c.slug}
             type="button"

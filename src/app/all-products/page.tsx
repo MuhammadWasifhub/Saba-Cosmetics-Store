@@ -20,7 +20,12 @@ async function getProducts(): Promise<Product[]> {
   return data as Product[];
 }
 
+import { getCategories } from '@/lib/categories';
+
 export default async function AllProductsPage() {
-  const products = await getProducts();
-  return <AllProductsClient products={products} />;
+  const [products, categories] = await Promise.all([
+    getProducts(),
+    getCategories(),
+  ]);
+  return <AllProductsClient products={products} categories={categories} />;
 }

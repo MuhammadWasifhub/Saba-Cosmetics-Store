@@ -5,6 +5,7 @@ import HeroBannerSlider from '@/components/HeroBannerSlider';
 import { Product, Banner } from '@/lib/types';
 import WhatsAppCTA from '@/components/WhatsAppCTA';
 import Reveal from '@/components/Reveal';
+import { getCategories, FALLBACK_CATEGORIES, Category } from '@/lib/categories';
 
 export const runtime = 'edge';
 export const revalidate = 0;
@@ -53,17 +54,19 @@ async function getBanners(): Promise<(Banner & { product_slug?: string | null })
   }));
 }
 
-const CATEGORY_CARDS = [
-  { name: 'Makeup', tag: 'Everyday glow', icon: '/icons/makeup.png' },
-  { name: 'Skincare', tag: 'Glow rituals', icon: '/icons/skincare.png' },
-  { name: 'Nail Paints', tag: 'Colour story', icon: '/icons/nail-paints.png' },
-  { name: 'Hand Bags', tag: 'Carry it well', icon: '/icons/hand-bags.png' },
-  { name: 'Fragrance', tag: 'Signature scent', icon: '/icons/fragrance.png' },
-  { name: 'New In', tag: 'Freshly picked', icon: '/icons/new-in.png' },
-];
+// category cards loaded from DB
 
 export default async function HomePage() {
-  const [products, banners] = await Promise.all([getProducts(), getBanners()]);
+  const [products, banners, categories] = await Promise.all([
+    getProducts(),
+    getBanners(),
+    getCategories(),
+  ]);
+
+  const categoryCards =
+    categories.length > 0
+      ? categories.filter((c) => c.slug !== 'Sale').slice(0, 6)
+      : FALLBACK_CATEGORIES;
 
   return (
     <main>
@@ -172,17 +175,21 @@ export default async function HomePage() {
           </Reveal>
 
           <div className="cat-grid">
-            {CATEGORY_CARDS.map((c, i) => {
+            {categoryCards.map((c, i) => {
               const href =
-                c.name === 'New In'
+                c.slug === 'New In'
                   ? '/all-products?sort=new'
-                  : `/all-products?category=${encodeURIComponent(c.name)}`;
+                  : `/all-products?category=${encodeURIComponent(c.slug)}`;
               return (
-                <Reveal key={c.name} delay={((i % 4) + 1) as 1 | 2 | 3 | 4}>
+                <Reveal key={c.id} delay={((i % 4) + 1) as 1 | 2 | 3 | 4}>
                   <Link href={href} className="cat-card">
                     <div className="cat-icon" aria-hidden="true">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={c.icon} alt="" />
+                      {c.icon_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c.icon_url} alt="" />
+                      ) : (
+                        <span className="cat-icon-fallback">{c.name.charAt(0)}</span>
+                      )}
                     </div>
                     <div className="cat-body">
                       <p className="cat-name">{c.name}</p>
@@ -480,6 +487,12 @@ export default async function HomePage() {
           height: 60%;
           object-fit: contain;
           display: block;
+        }
+
+        .cat-icon-fallback {
+          font-family: var(--font-display);
+          font-size: 22px;
+          color: var(--color-blush-deep);
         }
 
         .cat-card:hover .cat-icon {
