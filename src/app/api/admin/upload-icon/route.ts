@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { isAdminAuthenticated } from '@/lib/admin-auth';
+export const runtime = 'edge';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

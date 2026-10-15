@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import CategoryForm from '@/components/admin/CategoryForm';
+export const runtime = 'edge';
 
 export default function EditCategoryPage() {
   const router = useRouter();

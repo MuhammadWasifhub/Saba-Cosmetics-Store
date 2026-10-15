@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+export const runtime = 'edge';
 
 type Category = {
   id: string;
