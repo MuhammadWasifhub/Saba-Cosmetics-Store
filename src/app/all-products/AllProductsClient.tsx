@@ -243,7 +243,7 @@ export default function AllProductsClient({
           )}
         </div>
       ) : (
-        <div className={`ap-grid ap-grid-${view} anim-fade-in`} key={`${activeCategory}-${sort}-${view}`}>
+                <div className={`ap-grid ap-grid-${view} anim-fade-in all-products-page-grid`} key={`${activeCategory}-${sort}-${view}`}>
           {filtered.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
@@ -467,6 +467,21 @@ export default function AllProductsClient({
           .ap-search input { padding: 12px 40px 12px 42px; font-size: 13.5px; }
           .ap-sort-label { display: none; }
           .ap-view { display: none; }
+          
+          /* Make buttons full width ONLY on All Products page */
+          .all-products-page-grid .pc-price-row {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 10px !important;
+          }
+          .all-products-page-grid .pc-price-wrap {
+            flex-direction: column !important;
+            gap: 2px !important;
+          }
+          .all-products-page-grid .pc-add-btn {
+            width: 100% !important;
+            padding: 8px 13px !important;
+          }
         }
       ` }} />
     </main>
