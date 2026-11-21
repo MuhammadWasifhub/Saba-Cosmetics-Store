@@ -1,14 +1,6 @@
-'use client';
-
-import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Suspense } from 'react';
 
-function ConfirmedContent() {
-  const params = useSearchParams();
-  const orderNumber = params.get('order');
-  const customerId = params.get('cid');
-
+export default function OrderConfirmedPage() {
   return (
     <main
       className="container"
@@ -30,35 +22,11 @@ function ConfirmedContent() {
         ✓
       </div>
       <h1 style={{ fontSize: 28, marginBottom: 12 }}>Order confirmed</h1>
-      <p style={{ color: 'var(--color-muted)', marginBottom: 8 }}>
+      <p style={{ color: 'var(--color-muted)', marginBottom: 32 }}>
         Thank you ☺️ your payment details have been received.
         <br />
-        We'll verify your payment and your order will be delivered within 2–3 business days.
+        Orders within Karachi are delivered in 2–3 business days. Orders outside Karachi can take up to 7 business days.
       </p>
-      {orderNumber && (
-        <p style={{ fontSize: 15, marginBottom: 8 }}>
-          Order number: <strong>{orderNumber}</strong>
-        </p>
-      )}
-      {customerId && (
-        <div
-          style={{
-            background: 'var(--color-cream)',
-            borderRadius: 12,
-            padding: '16px 20px',
-            marginTop: 16,
-            marginBottom: 32,
-          }}
-        >
-          <p style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 6 }}>
-            Your Customer ID
-          </p>
-          <p style={{ fontSize: 20, fontWeight: 600, letterSpacing: '0.03em' }}>{customerId}</p>
-          <p style={{ fontSize: 12.5, color: 'var(--color-muted)', marginTop: 8, lineHeight: 1.5 }}>
-            Please save this ID. You'll need it for any future order tracking, returns, or complaints.
-          </p>
-        </div>
-      )}
       <Link
         href="/"
         style={{
@@ -72,13 +40,5 @@ function ConfirmedContent() {
         Continue shopping
       </Link>
     </main>
-  );
-}
-
-export default function OrderConfirmedPage() {
-  return (
-    <Suspense fallback={null}>
-      <ConfirmedContent />
-    </Suspense>
   );
 }

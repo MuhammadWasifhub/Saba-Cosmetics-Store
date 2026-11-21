@@ -15,8 +15,8 @@ const PAKISTAN_CITIES = [
   'Bahawalpur', 'Sargodha', 'Abbottabad', 'Other',
 ];
 
-const EASYPAISA_NUMBER = '03110261448';
-const EASYPAISA_NAME = 'Sabah Rasheed';
+const EASYPAISA_NUMBER = '03162982285';
+const EASYPAISA_NAME = 'Muhammad Wasif';
 
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
@@ -115,7 +115,7 @@ export default function CheckoutPage() {
       }
 
       clearCart();
-      router.push(`/order-confirmed?order=${data.order_number}&cid=${data.customer_id}`);
+      router.push('/order-confirmed');
     } catch {
       setError('Network error. Please check your connection and try again.');
       setSubmitting(false);

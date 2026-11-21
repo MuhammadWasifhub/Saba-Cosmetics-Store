@@ -118,7 +118,7 @@ export default async function HomePage() {
                   <div className="hero-stat-sep" aria-hidden="true" />
                   <div>
                     <span className="hero-stat-num">100%</span>
-                    <span className="hero-stat-label">Authentic products</span>
+                    <span className="hero-stat-label">Curated by Saba</span>
                   </div>
                   <div className="hero-stat-sep" aria-hidden="true" />
                   <div>

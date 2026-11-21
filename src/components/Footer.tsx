@@ -54,7 +54,6 @@ export default async function Footer() {
             <p style={colTitle}>Help</p>
             <ul style={listStyle}>
               <li><Link href="/policies" style={linkStyle}>Policies</Link></li>
-              <li><Link href="/returns" style={linkStyle}>Returns &amp; Complaints</Link></li>
               <li><Link href="/about" style={linkStyle}>Our Story</Link></li>
               <li>
                 <a
